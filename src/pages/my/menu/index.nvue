@@ -1,0 +1,113 @@
+<template>
+	<view class="menu_wrapper">
+		<b-tabs
+			class="tabs"
+			:tabs="tabs"
+			:current.sync="current"
+			just-content="flex-start"
+			active-style="font-size: 38rpx;line-height: 60rpx;"
+			normal-style="font-size: 36rpx;line-height: 60rpx;"
+		/>
+		<swiper class="swiper_list" :current="current" :indicator-dots="false" :autoplay="false" @change="change">
+			<swiper-item class="swiper_list_item">
+				<waterfall-list :activeIndex="current"></waterfall-list>
+				<!-- <waterfall class="waterfall_wrapper" column-count="2" column-width="auto" column-gap="6">
+					<cell>
+						<menu-card :is-my="true"></menu-card>
+					</cell>
+				</waterfall> -->
+			</swiper-item>
+			<swiper-item class="swiper_list_item">
+				<waterfall-list :activeIndex="current"></waterfall-list>
+			</swiper-item>
+			<swiper-item class="swiper_list_item">
+				<waterfall-list :activeIndex="current"></waterfall-list>
+			</swiper-item>
+		</swiper>
+		<view class="add">
+			<text class="add_text" @click="handleNavigation('/pages/my/create_menu/index')">+</text>
+		</view>
+	</view>
+</template>
+
+<script>
+import BTabs from '@/pages/components/BTabs/index.vue'
+import menuCard from "@/pages/components/menu_card.vue"
+import waterfallList from "./waterfallList.vue"
+export default {
+	data() {
+		return {
+			current: 0,
+			tabs: []
+		}
+	},
+	components: {
+		BTabs,
+		menuCard,
+		waterfallList
+	},
+	methods: {
+		change(event) {
+			this.current = event.detail.current
+		},
+		handleNavigation(url) {
+			uni.navigateTo({
+				url
+			});
+		}
+	},
+	onLoad() {
+		this.tabs = [
+			{
+				id: 0,
+				label: '全部'
+			},
+			{
+				id: 1,
+				label: '公开食谱'
+			},
+			{
+				id: 2,
+				label: '私人食谱'
+			}
+		]
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.menu_wrapper {
+	flex: 1;
+	// background-color: pink;
+	position: relative;
+	.add {
+		width: 100rpx;
+		height: 100rpx;
+		background-color: #FFDD67;
+		border-radius: 50%;
+		position: fixed;
+		bottom: 100rpx;
+		right: 22rpx;
+		justify-content: center;
+		align-items: center;
+		&_text {
+			font-size: 100rpx;
+			color: #FFFFFF;
+		}
+	}
+}
+.tabs {
+	width: 750rpx;
+	justify-content: space-between;
+	padding: 0 32rpx;
+	border-bottom: solid 3rpx #F3F3F3;
+}
+.swiper_list {
+	flex: 1;
+	&_item {
+		padding: 28rpx 40rpx 0;
+		width: 750rpx;
+		flex: 1;
+	}
+}
+</style>

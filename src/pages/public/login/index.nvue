@@ -1,0 +1,191 @@
+<template>
+	<view class="login_wrapper">
+		<b-status-bar />
+		<view class="login">
+			<text class="login_text">登录</text>
+		</view>
+		<view class="form_wrapper">
+			<view class="form_top">
+				<text class="form_title">用户名</text>
+				<view class="form_input">
+					<input type="text" placeholder="请输入用户名" class="input" v-model="formData.username" />
+				</view>
+				<text class="form_title">密码</text>
+				<view class="form_input">
+					<input type="password" placeholder="请输入密码" class="input" v-model="formData.password" />
+				</view>
+			</view>
+			<view class="form_bottom">
+				<u-button type="info" shape="circle" text="登录" class="custom-style" throttleTime=500 :loading="isLoading" loadingText="加载中" @click="login"></u-button>
+				<!-- <view class="btn" @click="login">
+					<text class="btn_text">登录</text>
+				</view> -->
+				<view class="register">
+					<text class="register_text">没有账号？</text>
+					<text class="register_btn" @click="toRegister">注册一个</text>
+				</view>
+			</view>
+		</view>
+		<u-toast ref="uToast"></u-toast>
+	</view>
+</template>
+
+<script>
+import BStatusBar from '@/pages/components/BStatusBar/index.vue'
+import { mapMutations } from 'vuex'
+import { setUserInfo } from '@/utils/storage'
+export default {
+	data() {
+		return {
+			formData: {
+				username: '',
+				password: ''
+			},
+			isLoading: false,
+			customStyle: {
+				marginTop: '20px', // 注意驼峰命名，并且值必须用引号包括，因为这是对象
+				color: 'red'
+			}
+		}
+	},
+	components: {
+		BStatusBar
+	},
+	methods: {
+		...mapMutations('user', ['SET_USERINFO']),
+async login() {
+	this.isLoading = true
+	const response = await uni.request({
+		header: {
+			'content-type': 'application/x-www-form-urlencoded'
+		},
+		url: 'http://192.168.1.5:8080/account/login',
+		method: 'POST',
+		data: {
+			name: this.formData.username,
+			pwd: this.formData.password
+		},
+		// params: {
+		// },
+		success: (res) => {
+			// console.log(res)
+			if (res.data.code === 200) {
+				res.data.data.token = res.data.token
+				console.log(res.data.data)
+				this.SET_USERINFO(res.data.data)
+				setUserInfo(res.data.data)
+				uni.switchTab({
+					url: '/pages/home/index/index'
+				})
+			} else {
+				return this.$refs.uToast.show({
+					type: 'default',
+					message: "用户名不存在"
+				})
+			}
+		},
+		fail(err) {
+			return uni.showToast({
+				title: '请求接口失败'
+			})
+		},
+		complete: () => {
+			this.isLoading = false
+		}
+	})
+},
+		toRegister() {
+			uni.navigateTo({
+				url: '/pages/public/register/index'
+			})
+		}
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.login_wrapper {
+	flex: 1;
+	background: #FFDD67;
+	.login {
+		height: 300rpx;
+		align-items: center;
+		justify-content: center;
+		&_text {
+			font-weight: 600;
+			font-size: 64rpx;
+			color: #000000;
+		}
+	}
+	.form_wrapper {
+		background: #FFFFFF;
+		border-radius: 36rpx 36rpx 0 0;
+		flex: 1;
+		align-items: center;
+		.form_top {
+			padding-top: 98rpx;
+			flex: 2;
+			.form_title {
+				font-weight: 600;
+				font-size: 40rpx;
+				line-height: 48rpx;
+				color: #000000;
+				margin-bottom: 24rpx;
+			}
+			.form_input {
+				// height: 100rpx;
+				width: 566rpx;
+				background: rgba(246, 188, 18, 0.2);
+				border-radius: 8rpx;
+				margin-bottom: 64rpx;
+				.input {
+					padding-left: 20rpx;
+					font-size: 32rpx;
+					height: 100rpx;
+				}
+			}
+		}
+		.form_bottom {
+			flex: 1;
+			align-items: center;
+			// .btn {
+			// 	width: 566rpx;
+			// 	height: 96rpx;
+			// 	background-color: #FFDD67;
+			// 	border-radius: 55rpx;
+			// 	justify-content: center;
+			// 	align-items: center;
+			// 	margin-bottom: 62rpx;
+			// 	&_text {
+			// 		font-weight: 600;
+			// 		font-size: 40rpx;
+			// 		line-height: 48rpx;
+			// 		color: #000000;
+			// 	}
+			// }
+			.register {
+				flex-direction: row;
+				&_text {
+					font-weight: 600;
+					font-size: 40rpx;
+					line-height: 48rpx;
+					color: #000000;
+				}
+				&_btn {
+					font-weight: 600;
+					font-size: 40rpx;
+					line-height: 48rpx;
+					color: #7B61FF;
+				}
+			}
+		}
+	}
+}
+.custom-style {
+	width: 566rpx;
+	height: 96rpx;
+	font-size: 40rpx;
+	background-color: #FFDD67;
+	margin-bottom: 62rpx;
+}
+</style>

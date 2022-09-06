@@ -1,0 +1,105 @@
+<template>
+	<view class="my_wrapper">
+		<b-status-bar />
+		<view class="message">
+			<image src="@/static/imgs/test/avatar.png" mode="" class="avatar"></image>
+			<view class="">
+				<text class="username">{{ u_nick }}</text>
+				<text class="id">id:{{ u_id }}</text>
+			</view>
+		</view>
+		<view class="item" @click="handleNavigation('/pages/my/personal/index')">
+			<view class="left">
+				<u-icon name="account-fill" color="#FFCD38" size="24"></u-icon>
+				<text class="left_text">个人资料</text>
+			</view>
+			<u-icon name="arrow-right" color="#C4C4C4" size="24"></u-icon>
+		</view>
+		<view class="item" @click="handleNavigation('/pages/my/collection/index')">
+			<view class="left">
+				<u-icon name="star-fill" color="#FFCD38" size="24"></u-icon>
+				<text class="left_text">我的收藏</text>
+			</view>
+			<u-icon name="arrow-right" color="#C4C4C4" size="24"></u-icon>
+		</view>
+		<view class="item" @click="handleNavigation('/pages/my/menu/index')">
+			<view class="left">
+				<u-icon name="gift-fill" color="#FFCD38" size="24"></u-icon>
+				<text class="left_text">我的食谱</text>
+			</view>
+			<u-icon name="arrow-right" color="#C4C4C4" size="24"></u-icon>
+		</view>
+	</view>
+</template>
+
+<script>
+import BStatusBar from '@/pages/components/BStatusBar/index.vue'
+import { mapState } from 'vuex'
+
+export default {
+	components: {
+		BStatusBar
+	},
+	computed: {
+		...mapState('user', ['u_id', 'u_nick']),
+	},
+	methods: {
+		handleNavigation(url) {
+			uni.navigateTo({
+				url
+			});
+		}
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.my_wrapper {
+	padding: 0 44rpx;
+}
+.message {
+	flex-direction: row;
+	align-items: flex-end;
+	margin-bottom: 32rpx;
+	padding-top: 50rpx;
+	.avatar {
+		width: 160rpx;
+		height: 160rpx;
+		border-radius: 80rpx;
+		margin-right: 54rpx;
+	}
+	.username {
+		font-size: 50rpx;
+		font-weight: 600;
+		margin-bottom: 12rpx;
+		color: #FFCD38;
+	}
+	.id {
+		font-size: 30rpx;
+		color: #C4C4C4;
+	}
+}
+.item {
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	height: 80rpx;
+	border-bottom: 1px dashed #C4C4C4;
+	// margin-top: 18rpx;
+	.left {
+		height: 44rpx;
+		align-items: center;
+		flex-direction: row;
+		&_text {
+			font-size: 30rpx;
+			line-height: 30rpx;
+			color: #C4C4C4;
+			margin-left: 14rpx;
+		}
+	}
+	.right {
+		width: 40rpx;
+		height: 40rpx;
+	}
+}
+</style>

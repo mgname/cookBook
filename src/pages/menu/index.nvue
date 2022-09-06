@@ -1,0 +1,189 @@
+<template>
+	<view class="menu_wrapper">
+		<b-status-bar />
+		<view class="top">
+			<image class="top_select" src="../../static/imgs/select.png" mode="aspectFit" @click="handleNavigation()"></image>
+			<view class="top_search">
+				<image class="top_search_img" src="../../static/imgs/search.png" mode="aspectFit"></image>
+				<input class="top_input" type="text" v-model="searchTitle" placeholder="请输入搜索标题" @confirm="search" />
+				<u-icon v-if="searchTitle" class="icon-close" name="close-circle" color="#3D3D3D" size="20" @click="searchTitle = ''"></u-icon>
+			</view>
+		</view>
+		<waterfall
+			ref="list"
+			:loadmoreoffset="30"
+			:show-scrollbar="false"
+			class="waterfall_wrapper"
+			column-count="2"
+			column-width="auto"
+			column-gap="6"
+			@loadmore="loadmore"
+		>
+			<refresh :display="refreshing ? 'show' : 'hide'" @refresh="onrefresh">
+				<view class="loadmore">
+					<text class="loadmore_text">刷新中...</text>
+				</view>
+			</refresh>
+			<!-- <recommend-card :key="item.id" :index="index" :data="item" /> -->
+			<cell v-for="(item, index) in listData" :key="index">
+				<menu-card :item="item"></menu-card>
+			</cell>
+			<header>
+				<text v-if="isLoadingDone" class="loading_done">加载完成</text>
+				<view v-else class="loadmore">
+					<text class="loadmore_text">加载中...</text>
+				</view>
+			</header>
+		</waterfall>
+		<u-toast ref="uToast"></u-toast>
+	</view>
+</template>
+
+<script>
+import menuCard from "../components/menu_card.vue"
+import BStatusBar from '@/pages/components/BStatusBar/index.vue'
+import { mapMutations, mapState } from 'vuex'
+import listLoad from '@/mixins/listLoad.js'
+
+export default {
+	data() {
+		return {
+			searchTitle: '',
+			menuTitle: ''
+		}
+	},
+	computed: {
+		...mapState('user', ['token']),
+		...mapState('classification', ['time', 'classification', 'publisher'])
+	},
+	components: {
+		menuCard,
+		BStatusBar
+	},
+	mixins: [listLoad],
+	methods: {
+		// ...mapMutations('classification', ['SET_TIME', 'SET_CLASSIFICATION', 'SET_PUBLISHER']),
+		handleNavigation() {
+			uni.navigateTo({
+				url: '/pages/menu/filter/index'
+			});
+		},
+		search() {
+			this.menuTitle = this.searchTitle
+			this.getDataList(true)
+			this.menuTitle = ''
+			this.searchTitle = ''
+			// console.log('搜索')
+		},
+		loadmore() {
+			if (this.isLoadingDone) return
+			this.getDataList()
+		},
+		async getDataList(isRefresh) {
+			// console.log(this.token)
+			this.beforeRequest(isRefresh)
+			const response = await uni.request({
+				header: {
+					'content-type': 'application/x-www-form-urlencoded',
+					'token': this.token
+				},
+				url: 'http://192.168.1.5:8080/menus/getMenusList',
+				method: 'GET',
+				data: {
+					pageSize: this.size,
+					pageIndex: this.current,
+					menuTitle: this.menuTitle,
+					classificationTime: this.time,
+					classification: this.classification,
+					classificationPublisher: this.publisher
+				},
+				success: (res) => {
+					if (res.data.code === 200) {
+						// console.log(res.data)
+						// this.systemNames = res.data.data
+						this.afterRequest(res, isRefresh)
+						console.log(this.listData)
+					} else {
+						return this.$refs.uToast.show({
+							type: 'default',
+							message: "没有此菜谱"
+						})
+					}
+				},
+				fail(err) {
+					return this.$refs.uToast.show({
+						type: 'error',
+						message: "请求接口失败"
+					})
+				},
+				complete: () => {
+					// if (isRefresh) {
+					// 	this.SET_TIME('')
+					// 	this.SET_CLASSIFICATION('')
+					// 	this.SET_PUBLISHER('')
+					// }
+					this.finally()
+				}
+			})
+		}
+	},
+	onShow() {
+		console.log('aaaa')
+		this.getDataList(true)
+		// var domModule = weex.requireModule('dom');
+		// domModule.addRule('fontFace', {
+		//   'fontFamily': "iconfont",
+		//   'src': "url('https://at.alicdn.com/t/font_3286157_ohf49kq7uco.ttf?t=1648534856292')"
+		// })
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+/* @import url("../../static/iconfont/iconfont.css"); */
+// .iconfont {
+// 	  font-family: "iconfont" !important;
+// }
+.menu_wrapper {
+	padding: 0 40rpx;
+	flex: 1;
+}
+.top {
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24rpx;
+	&_select {
+		width: 48rpx;
+		height: 44rpx;
+	}
+	&_search {
+		background-color: #F3F3F3;
+		width: 586rpx;
+		height: 70rpx;
+		border-radius: 36rpx;
+		justify-content: center;
+		position: relative;
+		&_img {
+			position: absolute;
+			width: 30rpx;
+			height: 30rpx;
+			left: 32rpx;
+		}
+	}
+	&_input {
+		margin: 0 88rpx;
+		font-size: 28rpx;
+		line-height: 32rpx;
+		// color: #C4C4C4;
+	}
+}
+.waterfall_wrapper {
+	// background-color: pink;
+	flex: 1;
+}
+.icon-close {
+	position: absolute;
+	right: 32rpx;
+}
+</style>

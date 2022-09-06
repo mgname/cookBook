@@ -1,0 +1,26 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 3286157 */
+  src: url('https://at.alicdn.com/t/font_3286157_ohf49kq7uco.ttf?t=1648534856292') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-michi:before {
+  content: "\e600";
+}
+
+.icon-cameraaddfill:before {
+  content: "\e727";
+}
+
+.icon-sousuoxiao:before {
+  content: "\e8d6";
+}
+
+

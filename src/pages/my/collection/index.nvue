@@ -1,0 +1,102 @@
+<template>
+	<view class="collection_wrapper">
+		<waterfall
+			ref="list"
+			:loadmoreoffset="30"
+			:show-scrollbar="false"
+			class="waterfall_wrapper"
+			column-count="2"
+			column-width="auto"
+			column-gap="6"
+			@loadmore="loadmore"
+		>
+			<refresh :display="refreshing ? 'show' : 'hide'" @refresh="onrefresh">
+				<view class="loadmore">
+					<text class="loadmore_text">刷新中...</text>
+				</view>
+			</refresh>
+			<cell v-for="(item, index) in listData" :key="index">
+				<menu-card :item="item"></menu-card>
+			</cell>
+			<header>
+				<text v-if="isLoadingDone" class="loading_done">加载完成</text>
+				<view v-else class="loadmore">
+					<text class="loadmore_text">加载中...</text>
+				</view>
+			</header>
+		</waterfall>
+		<u-toast ref="uToast"></u-toast>
+	</view>
+</template>
+
+<script>
+import menuCard from "@/pages/components/menu_card.vue"
+import listLoad from '@/mixins/listLoad.js'
+import { mapState } from 'vuex'
+export default {
+	computed: {
+		...mapState('user', ['u_id'])
+	},
+	mixins: [listLoad],
+	components: {
+		menuCard
+	},
+	methods: {
+		loadmore() {
+			if (this.isLoadingDone) return
+			this.getDataList()
+		},
+		async getDataList(isRefresh) {
+			this.beforeRequest(isRefresh)
+			const response = await uni.request({
+				header: {
+					'content-type': 'application/x-www-form-urlencoded'
+				},
+				url: 'http://192.168.1.5:8080/collection/getAllCollectionMenus',
+				method: 'GET',
+				data: {
+					pageSize: this.size,
+					pageIndex: this.current,
+					id: this.u_id
+				},
+				success: (res) => {
+					console.log(res)
+					if (res.data.code === 200) {
+						// console.log(res.data)
+						this.afterRequest(res, isRefresh)
+						console.log(this.listData)
+					} else {
+						return this.$refs.uToast.show({
+							type: 'default',
+							message: "没有此菜谱"
+						})
+					}
+				},
+				fail(err) {
+					return this.$refs.uToast.show({
+						type: 'error',
+						message: "请求接口失败"
+					})
+				},
+				complete: () => {
+					this.finally()
+				}
+			})
+		}
+	},
+	onLoad() {
+		this.getDataList(true)
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.collection_wrapper {
+	padding: 0 40rpx;
+	// background-color: pink;
+	flex: 1;
+}
+.waterfall_wrapper {
+	flex: 1;
+}
+</style>

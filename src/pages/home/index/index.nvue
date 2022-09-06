@@ -1,0 +1,78 @@
+<template>
+	<view class="content">
+		<image class="bg" src="@/static/imgs/bg.png" mode="aspectFill"></image>
+		<b-status-bar />
+		<text class="title">FoodList</text>
+		<text class="to_eat">今天吃什么？</text>
+		<view class="btn" @click="handleNavigation()">
+			<text class="btn_text">帮我决定</text>
+		</view>
+	</view>
+</template>
+
+<script>
+import BStatusBar from '@/pages/components/BStatusBar/index.vue'
+export default {
+	data() {
+		return {
+			title: 'Hello'
+		}
+	},
+	components: {
+		BStatusBar
+	},
+	onLoad() {
+
+	},
+	methods: {
+		handleNavigation() {
+			uni.navigateTo({
+				url: '/pages/home/today_eat/index'
+			});
+		}
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.content {
+	flex: 1;
+	position: relative;
+}
+.bg {
+	flex: 1;
+	position: absolute;
+}
+.title {
+	font-family: 'WDCH';
+	font-size: 48rpx;
+	font-weight: 700;
+	line-height: 63rpx;
+	color: $first-title-color;
+	padding: 0 40rpx;
+}
+.to_eat {
+	font-weight: 700;
+	font-size: 72rpx;
+	line-height: 94rpx;
+	text-align: center;
+	color: $first-title-color;
+	margin-top: 384rpx;
+}
+.btn {
+	margin-top: 500rpx;
+	width: 386rpx;
+	height: 112rpx;
+	align-items: center;
+	justify-content: center;
+	background-color: #fff;
+	border-radius: 18rpx;
+	align-self: center;
+	&_text {
+		font-weight: 700;
+		font-size: 56rpx;
+		line-height: 74rpx;
+		color: #FFCD38;
+	}
+}
+</style>

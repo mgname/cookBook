@@ -1,0 +1,38 @@
+<template>
+	<view class="isAuth" />
+</template>
+
+<script>
+import { getUserInfo } from '@/utils/storage'
+export default {
+	onReady() {
+		const userinfo = getUserInfo()
+		console.log(userinfo)
+		if (!userinfo || userinfo.token.length <= 0) {
+			// eslint-disable-next-line no-undef
+			getApp().globalData.hasToIsAuthPage = true
+			uni.reLaunch({
+				url: '/pages/public/login/index'
+			})
+		} else {
+			// getApp().globalData.hasToIsAuthPage = true
+			// uni.reLaunch({
+			// 	url: '/pages/public/login/index'
+			// })
+			uni.reLaunch({
+				url: '/pages/home/index/index',
+				complete() {
+					// eslint-disable-next-line no-undef
+					if (!getApp().globalData.hasToIsAuthPage) {
+							getApp().globalData.hasToIsAuthPage = true
+					}
+				}
+			})
+		}
+	}
+}
+</script>
+
+<style>
+
+</style>

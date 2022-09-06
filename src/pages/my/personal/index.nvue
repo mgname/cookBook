@@ -1,0 +1,216 @@
+<template>
+	<view class="personal_wrapper">
+		<view class="item">
+			<view class="left">
+				<text class="left_icon">昵称</text>
+				<view style="width: 600rpx;" v-if="showEdit">
+					<input class="a" type="text" v-model="nick" style="font-weight: 600;color: #4A4A4A;" ref="editInput" />
+				</view>
+				<template v-if="!showEdit">
+					<text style="">{{ u_nick }}</text>
+					<u-icon name="edit-pen" color="#C4C4C4" size="24" @click="showEdit = true"></u-icon>
+				</template>
+			</view>
+			<!-- <image src="@/static/imgs/right.png" mode="aspectFit" class="right"></image> -->
+		</view>
+		<view class="item">
+			<view class="left">
+				<text class="left_icon">性别</text>
+				<text class="left_text">{{ sex }}</text>
+			</view>
+			<text class="right_text" @click="changeSex">更改</text>
+		</view>
+		<view class="item">
+			<view class="left">
+				<!-- <image src="" mode="" class="left_icon"></image> -->
+				<text class="left_icon">生日</text>
+				<text class="left_text">{{ dateBirthday | formatDate }}</text>
+			</view>
+			<text class="right_text" @click="changeBirthday">更改</text>
+		</view>
+		<u-picker :show="showSex" :columns="sexColums" @cancel="showSex = false" @confirm="confirmSex"></u-picker>
+		<u-datetime-picker
+			:show="showCalendar"
+			v-model="dateBirthday"
+			:minDate="0"
+			:maxDate="Number(new Date())"
+			mode="date"
+			@cancel="showCalendar = false"
+			@confirm="confirmBirthday"
+		></u-datetime-picker>
+		<view class="control_fixed">
+			<u-button type="default" shape="circle" text="确认修改" class="custom-style" throttleTime=500 :loading="isLoading" loadingText="加载中" @click="confirmEdit"></u-button>
+		</view>
+		<u-toast ref="uToast"></u-toast>
+	</view>
+</template>
+
+<script>
+import { mapState, mapMutations } from 'vuex'
+import { setUserInfo } from '@/utils/storage'
+
+export default {
+	data() {
+		return {
+			nick: '',
+			showCalendar: false,
+			dateBirthday: '',
+			showSex: false,
+			sex: '',
+			sexColums: [
+				['男', '女']
+			],
+			showEdit: false,
+			isLoading: false
+		}
+	},
+	computed: {
+		...mapState('user', ['u_id', 'u_nick', 'u_sex', 'u_birthday', 'token']),
+	},
+	methods: {
+		...mapMutations('user', ['SET_USERINFO']),
+		// editNick() {
+		// 	this.showEdit = true
+		// 	this.$nextTick(()=>{
+		// 		let goodsVal = uni.createSelectorQuery().select(".a");
+		// 		goodsVal.boundingClientRect((data)=> {
+		// 			console.log(data)
+		// 		}).exec()
+		// 	})
+		// },
+		changeBirthday() {
+			this.showCalendar = true
+		},
+		changeSex() {
+			this.showSex = true
+		},
+		confirmBirthday(e) {
+			console.log(e)
+			this.dateBirthday = e.value
+			this.showCalendar = false
+		},
+		confirmSex(e) {
+			this.sex = e.value[0]
+			this.showSex = false
+		},
+		async confirmEdit() {
+			this.isLoading = true
+			const response = await uni.request({
+				header: {
+					'content-type': 'application/x-www-form-urlencoded'
+				},
+				url: 'http://192.168.1.5:8080/account/updateUser',
+				method: 'POST',
+				data: {
+					nick: this.nick,
+					sex: this.sex,
+					birthday: this.dateBirthday,
+					id: this.u_id
+				},
+				success: (res) => {
+					// console.log(res)
+					if (res.data.code === 200) {
+						res.data.data.token = this.token
+						console.log(res.data.data)
+						this.SET_USERINFO(res.data.data)
+						setUserInfo(res.data.data)
+						this.$refs.uToast.show({
+							type: 'success',
+							message: "修改信息成功"
+						})
+						setTimeout(() =>{
+							uni.switchTab({
+								url: '/pages/my/index'
+							})
+						}, 3000)
+					} else {
+						// return uni.showToast({
+						// 	title: '用户名不存在'
+						// })
+						return this.$refs.uToast.show({
+							type: 'error',
+							message: "修改信息失败"
+						})
+					}
+				},
+				fail(err) {
+					return uni.showToast({
+						title: '请求接口失败'
+					})
+				},
+				complete: () => {
+					this.isLoading = false
+				}
+			})
+		}
+	},
+	filters: {
+		formatDate(value) {
+		  let date = new Date(value)
+		  let y = date.getFullYear(),
+		    m = date.getMonth() + 1,
+		    d = date.getDate()
+		  if (m < 10) { m = '0' + m }
+		  if (d < 10) { d = '0' + d }
+		  return y + '-' + m + '-' + d
+		}
+	},
+	onShow() {
+		this.dateBirthday = (new Date(Date.parse(this.u_birthday.substr(0, 10).replace(/-/g,'/')))).getTime()
+		this.nick = this.u_nick
+		this.sex = this.u_sex
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.personal_wrapper {
+	padding: 0 40rpx;
+}
+.item {
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	// height: 60rpx;
+	border-bottom: 1px dashed #C4C4C4;
+	// margin-top: 18rpx ;
+	.left {
+		// height: 44rpx;
+		align-items: center;
+		flex-direction: row;
+		// background-color: pink;
+		&_icon {
+			font-size: 24rpx;
+			line-height: 80rpx;
+			color: #C4C4C4;
+			margin-right: 30rpx;
+		}
+		&_text {
+			font-size: 32rpx;
+			font-weight: 600;
+			color: #4A4A4A;
+		}
+	}
+	.right {
+		width: 40rpx;
+		height: 40rpx;
+	}
+	.right_text {
+		font-size: 24rpx;
+		line-height: 80rpx;
+		color: #C4C4C4;
+	}
+}
+.control_fixed {
+	width: 750rpx;
+	position: fixed;
+	bottom: 0;
+	align-items: center;
+	.custom-style {
+		width: 592rpx;
+		height: 88rpx;
+		background-color: #FFCD38;
+		margin-bottom: 160rpx;
+	}
+}
+</style>

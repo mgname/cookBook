@@ -1,0 +1,185 @@
+<template>
+	<view class="">
+		<b-status-bar />
+		<view class="header">
+			<text class="header_title">筛选</text>
+			<text class="header_optioned">已选：{{ optioned }} 项</text>
+		</view>
+		<view class="classification">
+			<text class="title">按用餐时间分</text>
+			<option :options="optionsTime" :data.sync="optionTime"></option>
+		</view>
+		<view class="classification">
+			<text class="title">按食物类别分</text>
+			<option :options="optionsClassification" :data.sync="optionClassification"></option>
+		</view>
+		<view class="classification">
+			<text class="title">按发布类型分</text>
+			<option :options="optionsPublisher" :data.sync="optionPublisher"></option>
+			<!-- <view class="item_wrapper">
+				<view class="item">
+					<text class="item_text">我发布的</text>
+				</view>
+			</view> -->
+		</view>
+		<view class="control_fixed">
+			<u-button type="default" shape="circle" text="确认" class="custom-style" throttleTime=500 :loading="isLoading" loadingText="加载中" @click="search"></u-button>
+			<!-- <view class="confirm">
+				<text class="confirm_text">确认</text>
+			</view> -->
+		</view>
+	</view>
+</template>
+
+<script>
+import Option from '@/pages/components/Option/index.vue'
+import BStatusBar from '@/pages/components/BStatusBar/index.vue'
+import { mapMutations, mapState } from 'vuex'
+
+export default {
+	data() {
+		return {
+			optionsTime: [
+				{ id: 0, label: '早餐' },
+				{ id: 1, label: '午餐' },
+				{ id: 2, label: '晚餐' },
+				{ id: 3, label: '加餐' }
+			],
+			optionTime: '',
+			optionsClassification: [
+				{ id: 0, label: '主食' },
+				{ id: 1, label: '菜品' },
+				{ id: 2, label: '甜点' },
+				{ id: 3, label: '汤' },
+				{ id: 4, label: '炸物' },
+				{ id: 5, label: '小食' },
+				{ id: 6, label: '饮品' }
+			],
+			optionClassification: '',
+			optionsPublisher: [
+				{ id: 0, label: '我发布的' }
+			],
+			optionPublisher: '',
+			isLoading: false
+		}
+	},
+	computed: {
+		...mapState('user', ['u_id']),
+		optioned() {
+			let count = 0
+			if (this.optionTime !== '') {
+				count++;
+			}
+			if (this.optionClassification !== '') {
+				count++;
+			}
+			if (this.optionPublisher !== '') {
+				count++;
+			}
+			
+			return count
+		}
+	},
+	components: {
+		BStatusBar,
+		Option
+	},
+	methods: {
+		...mapMutations('classification', ['SET_TIME', 'SET_CLASSIFICATION', 'SET_PUBLISHER']),
+		search() {
+			this.isLoading = true
+			if (this.optionTime !== '') {
+				this.SET_TIME(this.optionTime)
+			}
+			if (this.optionClassification !== '') {
+				this.SET_CLASSIFICATION(this.optionClassification)
+			}
+			if (this.optionPublisher !== '') {
+				this.SET_PUBLISHER(this.u_id)
+			}
+			setTimeout(() => {
+				this.isLoading = false
+				uni.navigateBack({
+					animationType: 'slide-out-right'
+				})
+			}, 2000)
+		}
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.header {
+	margin: 0 30rpx;
+	position: relative;
+	// background-color: pink;
+	align-items: center;
+	&_title {
+		font-size: 44rpx;
+		font-weight: 600;
+		line-height: 100rpx;
+		color: #4A4A4A;
+	}
+	&_optioned {
+		position: absolute;
+		right: 0;
+		// bottom: 22rpx;
+		font-size: 32rpx;
+		font-weight: 500;
+		line-height: 100rpx;
+		color: #4A4A4A;
+	}
+}
+.classification {
+	padding-left: 24rpx;
+	margin-bottom: 20rpx;
+	.title {
+		font-size: 30rpx;
+		line-height: 30rpx;
+		color: #C4C4C4;
+		margin: 0 0 32rpx 0;
+	}
+}
+// .item {
+// 	background: #F3F3F3;
+// 	margin: 0 24rpx 28rpx 0;
+// 	border-radius: 10rpx;
+// 	justify-content: center;
+// 	padding: 0 50rpx;
+// 	height: 74rpx;
+// 	&_text {
+// 		font-size: 24rpx;
+// 		color: #4A4A4A;
+// 	}
+// 	&_wrapper {
+// 		flex-direction: row;
+// 		flex-wrap: wrap;
+// 		// padding-left: 40rpx;
+// 	}
+// }
+.control_fixed {
+	width: 750rpx;
+	position: fixed;
+	bottom: 0;
+	align-items: center;
+	.confirm {
+		width: 592rpx;
+		height: 88rpx;
+		background-color: #FFCD38;
+		border-radius: 62rpx;
+		justify-content: center;
+		align-items: center;
+		margin-bottom: 92rpx;
+		&_text {
+			font-size: 36rpx; 
+			color: #FFFFFF;
+		}
+	}
+}
+.custom-style {
+	width: 592rpx;
+	height: 88rpx;
+	background-color: #FFCD38;
+	margin-bottom: 92rpx;
+}
+</style>

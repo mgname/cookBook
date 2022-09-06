@@ -1,0 +1,157 @@
+<template>
+	<view class="detail_wrapper">
+		<image v-if="!imgSrc" src="@/static/imgs/test/food_banner.png" mode="aspectFill" class="img"></image>
+		<image v-else :src="imgSrc" mode="aspectFill" class="img" @click="previewImage(imgSrc)"></image>
+		<text class="title">{{ item.m_title }}</text>
+		<view class="tag_wrapper">
+			 <view class="tag">
+			 	<text class="tag_text">{{ timeCategory[item.m_category_time] }}</text>
+			 </view>
+			 <view class="tag">
+			 	<text class="tag_text">{{ category[item.m_category] }}</text>
+			 </view>
+		</view>
+		<view class="step_wrapper">
+			<text class="step_title">制作步骤</text>
+			<text class="step" v-for="(step, index) in steps" :key="index">{{ index + 1 }}.{{ step }}</text>
+		</view>
+		<u-toast ref="uToast"></u-toast>
+	</view>
+</template>
+ 
+<script>
+import { mapState } from 'vuex'
+export default {
+	data() {
+		return {
+			id: '',
+			item: {},
+			timeCategory: {
+				'0': '早餐',
+				'1': '午餐',
+				'2': '晚餐',
+				'3': '加餐'
+			},
+			category: {
+				'0': '主食',
+				'1': '菜品',
+				'2': '甜点',
+				'3': '汤',
+				'4': '炸物',
+				'5': '小食',
+				'6': '饮品',
+			},
+			imgSrc: ''
+		}
+	},
+	computed: {
+		...mapState('user', ['token']),
+		steps() {
+			return this.item.m_step && this.item.m_step.split(/\d+\./g).filter((str) =>{
+				return str.length > 0
+			})
+		}
+	},
+	methods: {
+		previewImage(imgSrc) {
+			let images = [];
+			images.push(imgSrc)
+			uni.previewImage({
+				current: 0,
+				urls: images
+			})
+		},
+		async getMenuDetail() {
+			const response = await uni.request({
+				header: {
+					'content-type': 'application/x-www-form-urlencoded',
+					'token': this.token
+				},
+				url: 'http://192.168.1.5:8080/menus/getMenuDetail',
+				method: 'GET',
+				data: {
+					id: this.id
+				},
+				success: (res) => {
+					if (res.data.code === 200) {
+						this.item = {...{...res.data.data}[0]}
+						if (this.item.m_pic) {
+							this.imgSrc = 'http://192.168.1.5:8080/static/' + this.item.m_pic
+						}
+						// console.log(this.item)
+					} else {
+						return this.$refs.uToast.show({
+							type: 'default',
+							message: "菜单详情获取失败"
+						})
+					}
+				},
+				fail(err) {
+					return this.$refs.uToast.show({
+						type: 'error',
+						message: "请求接口失败"
+					})
+				},
+				complete: () => {
+				}
+			})
+		}
+	},
+	// 菜单id
+	onLoad(data) {
+		this.id = data.id
+		this.getMenuDetail()
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.detail_wrapper {
+	padding: 0 32rpx;
+	.img {
+		height: 344rpx;
+		border-radius: 10rpx;
+	}
+	.title {
+		font-size: 46rpx;
+		font-weight: 600;
+		line-height: 60rpx;
+		color: #4A4A4A;
+		margin: 24rpx 0 12rpx 0;
+	}
+}
+.tag {
+	padding: 0 38rpx;
+	height: 50rpx;
+	justify-content: center;
+	border: 1px solid #FFCD38;
+	border-radius: 10rpx;
+	margin-right: 12rpx;
+	&_wrapper {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	&_text {
+		font-size: 26rpx;
+		font-weight: 600;
+		line-height: 30rpx;
+		color: #FFCD38;
+	}
+}
+.step {
+	font-size: 32rpx;
+	line-height: 40rpx;
+	color: #4A4A4A;
+	margin: 0 0 28rpx 22rpx;
+	&_title {
+		font-size: 42rpx;
+		font-weight: 500;
+		line-height: 50rpx;
+		color: #4A4A4A;
+		margin-bottom: 24rpx;
+	}
+	&_wrapper {
+		padding-top: 24rpx;
+	}
+}
+</style>
